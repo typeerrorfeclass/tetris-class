@@ -1,0 +1,30 @@
+@border-color: #2d3047;
+
+.tetris-tile-wrap {
+  display: grid;
+  width: 400px;
+  height: 800px;
+  grid-template-columns: repeat(10, 10%);
+  grid-template-rows: repeat(20, 5%);
+  border: solid @border-color 1px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  .yellow {
+    background-color: #fffd82;
+  }
+
+  .red {
+    background-color: #ff9671;
+  }
+
+  .green {
+    background-color: #1b998b;
+  }
+
+  .tile {
+    border: solid @border-color 1px;
+  }
+}

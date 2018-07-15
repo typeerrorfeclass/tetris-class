@@ -1,20 +1,29 @@
-const TILE_NUM_X = 10
-const TILE_NUM_Y = 20
+import View from './view'
+import Controller from './controller'
+import Model from './model'
 
 export default class Tetris {
-  get el () {
-    return this.el_
+  get level () {
+    return this.model_.level
   }
 
-  static createHTMLContent () {
-
-
-
+  set level (val) {
+    this.model_.level = val
   }
 
   constructor (sel) {
-    const el = this.el_ = document.querySelector(sel)
+    this.view_ = new View(sel)
+    this.model_ = new Model()
+    this.controller_ = new Controller(this.view_, this.model_)
+  }
 
-    el.innerHTML = 
+  start () {
+    this.view_.start()
+    this.model_.start()
+  }
+
+  stop () {
+    this.model_.stop()
+    this.view_.stop()
   }
 }
