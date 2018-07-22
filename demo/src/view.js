@@ -54,12 +54,12 @@ export default class View {
   render (model) {
     for (let x = 0; x < TILE_NUM_X; x++) {
       for (let y = 0; y < TILE_NUM_Y; y++) {
-        const state =  model.getTileState(x, y)
+        const state = model.getTileState(x, y)
         const className = `x${x}y${y}`
         const tileElement = this.el.querySelector(`.${className}`)
 
         if (!tileElement) {
-            continue
+          continue
         }
 
         let colorClass = ''
@@ -70,7 +70,13 @@ export default class View {
           colorClass = 'red'
         }
 
-        tileElement.className = `tile ${className} ${colorClass}`
+        const cls = `tile ${className} ${colorClass}`
+
+        if (tileElement.className === cls) {
+          continue
+        }
+
+        tileElement.className = cls
       }
     }
   }
