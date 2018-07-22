@@ -1,5 +1,5 @@
 import widgetFactory from './widget'
-import { TILE_NUM_X, TILE_NUM_Y, EMPTY_TILE, FULLFILLED_TILE } from './const'
+import { TILE_NUM_X, TILE_NUM_Y, EMPTY_TILE, FULLFILLED_TILE, ACTIVE_TILE } from './const'
 
 function repeat (fn, times) {
   const ret = []
@@ -63,16 +63,25 @@ export default class Model {
   // 左移
   widgetGoLeft () {
     this.widget.goLeft()
+    this.updateActionResult()
   }
 
   // 右移
   widgetGoRight () {
     this.widget.goRight()
+    this.updateActionResult()
+  }
+
+  // 下移
+  widgetGoDown() {
+    this.widget.goDown()
+    this.updateActionResult()
   }
 
   // 翻转
   widgetRotate () {
     this.widget.rotate()
+    this.updateActionResult()
   }
 
   // 速降
@@ -80,16 +89,46 @@ export default class Model {
     this.widget.goFast()
   }
 
+  updateActionResult () {
+    this.clearActiveTiles()
+
+    // 刷新现在的widget位置
+    const { widget } = this
+
+    if (widget) {
+      // 刷新现在的widget位置
+      widget.updateActionResult(this)
+    }
+
+    // 通知view更新画面
+    this.context.emitModelChange()
+  }
+
+  // 清理stage中active的tile
+  clearActiveTiles () {
+    this.stage_ = this.stage.map(line => {
+      return line.map(tileState => {
+        if (tileState === ACTIVE_TILE) {
+          return EMPTY_TILE
+        }
+
+        return tileState
+      })
+    })
+  }
+
   initStage () {
     this.stage_ = repeat(_ => repeat(_ => EMPTY_TILE, TILE_NUM_X), TILE_NUM_Y)
   }
 
   clearStage () {
-    this.stage_ = null
+    this.initStage()
+    this.updateActionResult()
   }
 
   initWidget () {
     this.widget_ = widgetFactory()
+    this.updateActionResult()
   }
 
   clearWidget () {
@@ -124,17 +163,21 @@ export default class Model {
   doUpdate () {
     const { widget } = this
 
-    widget.update(this)
-    this.compute()
-    this.counter_ = 0
-  }
-
-  compute () {
-    this.updateStage()
+    this.updateActionResult(this)
     this.updateFailState()
-    this.updateWidget()
+    this.context.emitModelChange()
+
+    if (this.failed) {
+      return
+    }
+
+    this.updateWidget() // 新建widget或向下一格
+    this.updateStage() // 消行
+    this.updateFailState() // 判定有没有失败
 
     this.context.emitModelChange()
+
+    this.counter_ = 0
   }
 
   updateStage () {
@@ -159,12 +202,15 @@ export default class Model {
   updateFailState () {
     if (this.stage[0].some(el => el === FULLFILLED_TILE)) {
       this.failed_ = true
+      this.stop()
     }
   }
 
   updateWidget () {
-    if (this.widget.finished) {
+    if (!this.widget || this.widget.finished) {
       this.initWidget()
+    } else {
+      this.widgetGoDown() // 向下一格
     }
   }
 }
