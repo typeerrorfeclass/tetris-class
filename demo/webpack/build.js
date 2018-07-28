@@ -11,6 +11,11 @@ module.exports = {
     filename: 'bundle.min.js'
   },
 
+  externals: {
+    react: 'React',
+    'react-dom': 'ReactDOM'
+  },
+
   module: {
     rules: [
       {

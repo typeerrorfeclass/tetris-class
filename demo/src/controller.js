@@ -7,7 +7,7 @@ export default class Controller {
     model.context = this
   }
 
-    // model变更
+  // model变更
   emitModelChange () {
     const mdl = this.model_
 
@@ -18,7 +18,7 @@ export default class Controller {
     this.view_.render(mdl)
   }
 
-    // view事件
+  // view事件
   emitViewEvent (evt) {
     const mdl = this.model_
 
@@ -41,4 +41,3 @@ export default class Controller {
     }
   }
 }
-
