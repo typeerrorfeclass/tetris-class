@@ -14,6 +14,7 @@ function repeat (fn, times) {
 export default class Model {
   level = 1
   context = null
+  isPaused = false
 
   get stage () {
     return this.stage_
@@ -28,7 +29,7 @@ export default class Model {
   }
 
   get started () {
-      return this.started_
+    return this.started_
   }
 
   constructor () {
@@ -52,6 +53,14 @@ export default class Model {
     this.clearStage()
   }
 
+  pause () {
+    this.isPaused = true
+  }
+
+  resume () {
+    this.isPaused = false
+  }
+
   getTileState (x, y) {
     return this.stage[y][x]
   }
@@ -62,42 +71,61 @@ export default class Model {
 
   // 左移
   widgetGoLeft () {
+    if (this.isPaused) {
+      return
+    }
+
     this.widget.goLeft()
     this.updateActionResult()
   }
 
   // 右移
   widgetGoRight () {
+    if (this.isPaused) {
+      return
+    }
+
     this.widget.goRight()
     this.updateActionResult()
   }
 
   // 下移
-  widgetGoDown() {
+  widgetGoDown () {
+    if (this.isPaused) {
+      return
+    }
+
     this.widget.goDown()
     this.updateActionResult()
   }
 
   // 翻转
   widgetRotate () {
+    if (this.isPaused) {
+      return
+    }
+
     this.widget.rotate()
     this.updateActionResult()
   }
 
   // 速降
   widgetGoFast () {
+    if (this.isPaused) {
+      return
+    }
+
     this.widget.goFast()
   }
 
   updateActionResult () {
     this.clearActiveTiles()
 
-    // 刷新现在的widget位置
     const { widget } = this
 
     if (widget) {
       // 刷新现在的widget位置
-      widget.updateActionResult(this)
+      widget.updateActionResult()
     }
 
     // 通知view更新画面
@@ -127,7 +155,7 @@ export default class Model {
   }
 
   initWidget () {
-    this.widget_ = widgetFactory()
+    this.widget_ = widgetFactory(this)
     this.updateActionResult()
   }
 
@@ -147,6 +175,10 @@ export default class Model {
   timeout () {
     const { level, widget } = this
 
+    if (this.isPaused) {
+      return
+    }
+
     if (widget.fast) {
       this.doUpdate()
       return
@@ -161,13 +193,11 @@ export default class Model {
   }
 
   doUpdate () {
-    const { widget } = this
-
     this.updateActionResult(this)
     this.updateFailState()
-    this.context.emitModelChange()
 
     if (this.failed) {
+      this.context.emitModelChange()
       return
     }
 
@@ -176,7 +206,6 @@ export default class Model {
     this.updateFailState() // 判定有没有失败
 
     this.context.emitModelChange()
-
     this.counter_ = 0
   }
 

@@ -1,115 +1,99 @@
-import { EMPTY_TILE, ACTIVE_TILE, FULLFILLED_TILE, TILE_NUM_X, TILE_NUM_Y } from '../const'
+import { ACTIVE_TILE, FULLFILLED_TILE, TILE_NUM_X, TILE_NUM_Y } from '../const'
 import createInitialTiles from './tileFactory'
-
-function trans (o, t) {
-  let y = t.x - o.x
-  let x = t.y - o.y
-
-  t.x = x + o.x
-  t.y = y + o.y
-}
+import rotate from './rotator'
 
 export default class Widget {
   fast = false
   finished = false
-
-  get tiles () {
-    return this.tiles_
-  }
+  tiles = []
 
   get type () {
     return this.type_
   }
 
-  constructor (type) {
+  constructor (type, model) {
     this.type_ = type
-    this.tiles_ = createInitialTiles(type)
+    this.model_ = model
+    this.tiles = createInitialTiles(type)
+    this.isAtBottom_ = false
   }
 
-  updateActionResult (model) {
-    if (this.atBottom(model)) {
+  updateActionResult () {
+    if (this.atBottom()) {
       // 到底或者被拦住了
-      this.flushToModel(model, FULLFILLED_TILE)
+      this.flushToModel(FULLFILLED_TILE)
       this.finished = true
     } else {
-      this.flushToModel(model, ACTIVE_TILE)
+      this.flushToModel(ACTIVE_TILE)
     }
   }
 
   goDown () {
-    this.tiles_ = this.tiles_.map(tile => {
+    if (this.atBottom()) {
+      return
+    }
+
+    this.tiles = this.tiles.map(tile => {
       return {
         x: tile.x,
         y: tile.y + 1
       }
-    })   
+    })
   }
 
   goLeft () {
-    if (this.tiles_.some(tile => tile.x === 0)) {
+    if (this.atBottom()) {
+      return
+    }
+
+    if (this.tiles.some(tile => tile.x === 0)) {
       console.log(`已经移动到最左边.`)
       return
     }
 
-    this.tiles_ = this.tiles_.map(tile => {
+    this.tiles = this.tiles.map(tile => {
       return {
         x: tile.x - 1,
         y: tile.y
       }
-    })  
+    })
   }
 
   goRight () {
-    if (this.tiles_.some(tile => tile.x === TILE_NUM_X - 1)) {
+    if (this.atBottom()) {
+      return
+    }
+
+    if (this.tiles.some(tile => tile.x === TILE_NUM_X - 1)) {
       console.log(`已经移动到最右边.`)
       return
     }
 
-    this.tiles_ = this.tiles_.map(tile => {
+    this.tiles = this.tiles.map(tile => {
       return {
         x: tile.x + 1,
         y: tile.y
       }
-    })  
+    })
   }
 
   goFast () {
+    if (this.atBottom()) {
+      return
+    }
+
     this.fast = true
   }
 
   rotate () {
-    if (this.type !== 3) {
+    if (this.atBottom()) {
       return
     }
 
-    // 以第二个tile为轴，x和y坐标互换
-    const { tiles } = this
-    const newTiles = tiles.map(el => {
-      return {
-        x: el.x,
-        y: el.y
-      }
-    })
-    const [t0, t1, t2, t3] = newTiles
-
-    trans(t1, t0)
-    trans(t1, t2)
-    trans(t1, t3)
-
-    const legal = newTiles.every(el => {
-      const { x, y } = el
-      return x >= 0 && y >= 0 && x < TILE_NUM_X && y < TILE_NUM_Y
-    })
-
-    if (!legal) {
-      console.log(`非法位置`)
-      return
-    }
-
-    this.tiles_ = newTiles
+    rotate(this)
   }
 
-  flushToModel (model, state) {
+  flushToModel (state) {
     const { tiles } = this
     tiles.forEach(tile => {
       if (tile.x < 0 || tile.y < 0 ||
@@ -117,16 +101,22 @@ export default class Widget {
         return
       }
 
-      model.setTileState(tile.x, tile.y, state)
+      this.model_.setTileState(tile.x, tile.y, state)
     })
   }
 
-  atBottom (model) {
+  atBottom () {
+    if (this.isAtBottom_) {
+      return true
+    }
+
     const { tiles } = this
 
-    return tiles.some(tile => {
+    this.isAtBottom_ = tiles.some(tile => {
       return (tile.y === TILE_NUM_Y - 1) ||
-        (model.getTileState(tile.x, tile.y + 1) === FULLFILLED_TILE)
+        (this.model_.getTileState(tile.x, tile.y + 1) === FULLFILLED_TILE)
     })
+
+    return this.isAtBottom_
   }
 }
