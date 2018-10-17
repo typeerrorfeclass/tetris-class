@@ -1,5 +1,5 @@
-// import View from './view'
-import ReactView from './reactView'
+import View from './view'
+// import ReactView from './reactView'
 import Controller from './controller'
 import Model from './model'
 
@@ -13,8 +13,8 @@ export default class Tetris {
   }
 
   constructor (sel) {
-    // this.view_ = new View(sel)
-    this.view_ = new ReactView(sel)
+    this.view_ = new View(sel)
+    // this.view_ = new ReactView(sel)
     this.model_ = new Model()
     this.controller_ = new Controller(this.view_, this.model_)
   }
