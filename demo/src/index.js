@@ -1,6 +1,9 @@
-import Tetris from './tetris'
+// import Tetris from './tetris'
 
-const game = new Tetris('#app')
+import('./tetris').then(mod => {
+  const game = new mod.default('#app')
 
-game.level = 6
-game.start()
+  game.level = 6
+  game.start()
+})
+
