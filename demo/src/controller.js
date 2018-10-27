@@ -26,7 +26,7 @@ export default class Controller {
       return
     }
 
-    const code = evt.code
+    const { code } = evt
 
     if (code === 'ArrowLeft') {
       mdl.widgetGoLeft()
